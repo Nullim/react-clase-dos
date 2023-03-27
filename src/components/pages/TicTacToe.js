@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 import './TicTacToe.css';
@@ -24,9 +24,9 @@ import FancyButton from '../small/FancyButton';
   Esto les dará algunas pistas
 */
 
-const Square = ({ value, onClick = () => {} }) => {
+const Square = ({ value, onSquareClick = () => {} }) => {
   return (
-    <div onClick={onClick} className="square">
+    <div onClick={onSquareClick} className="square">
       {value}
     </div>
   );
@@ -56,38 +56,77 @@ WinnerCard.propTypes = {
 };
 
 const getWinner = tiles => {
-  // calcular el ganador del partido a partir del estado del tablero
-  // (existen varias formas de calcular esto, una posible es listar todos los
-  // casos en los que un jugador gana y ver si alguno sucede)
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ];
+  for (let i = 0; i < lines.length; i++){
+    const [a, b, c] = lines[i];
+    if (tiles[a] && tiles[a] === tiles[b] && tiles[a] === tiles[c]) {
+      return tiles[a];
+    }
+  }
   return null;
 };
 
 const useTicTacToeGameState = initialPlayer => {
-  const tiles = [];
-  const currentPlayer = initialPlayer;
-  const winner = getWinner(tiles);
-  const gameEnded = false;
+  const [tiles, setTiles] = useState(Array(9).fill(""));
+  const [currentPlayer, setCurrentPlayer] = useState(initialPlayer);
+  const [gameEnded, setGameEnded] = useState(false);
 
-  const setTileTo = (tileIndex, player) => {
-    // convertir el tile en la posición tileIndex al jugador seleccionado
-    // ejemplo: setTileTo(0, 'X') -> convierte la primera casilla en 'X'
+  const setTileTo = (tileIndex) => {
+    if (tiles[tileIndex] !== "" || gameEnded) {
+      return;
+    }
+    const newTiles = [...tiles];
+    newTiles[tileIndex] = currentPlayer;
+    setTiles(newTiles)
+    setCurrentPlayer(currentPlayer === 'X' ? 'O' : 'X');
+    const winner = getWinner(newTiles)
+    if (winner) {
+      setGameEnded(true);
+    } else if (newTiles.every(tile => tile !== "")){
+      setGameEnded(true)
+      return false;
+    }
   };
   const restart = () => {
-    // Reiniciar el juego a su estado inicial
+    setGameEnded(false);
+    setTiles(Array(9).fill(""));
+    setCurrentPlayer('X');
   };
-
   // por si no reconocen esta sintáxis, es solamente una forma más corta de escribir:
   // { tiles: tiles, currentPlayer: currentPlayer, ...}
-  return { tiles, currentPlayer, winner, gameEnded, setTileTo, restart };
+  return { tiles, currentPlayer, winner: getWinner(tiles), gameEnded, setTileTo, restart };
 };
 
 const TicTacToe = () => {
-  // const { tiles, currentPlayer, winner, gameEnded, setTileTo, restart } = useTicTacToeGameState('X');
+  const { tiles, currentPlayer, winner, gameEnded, setTileTo, restart } = useTicTacToeGameState('X');
   return (
     <div className="tictactoe">
-      {/* Este componente debe contener la WinnerCard y 9 componentes Square, 
-      separados en tres filas usando <div className="tictactoe-row">{...}</div> 
-      para separar los cuadrados en diferentes filas */}
+      {!gameEnded && <div className='status'>Next player is: {currentPlayer}</div>}
+      <WinnerCard winner={winner} onRestart={restart} show={gameEnded}/>
+      <div className='tictactoe-row'>
+        <Square value={tiles[0]} onSquareClick={() => setTileTo(0)}/>
+        <Square value={tiles[1]} onSquareClick={() => setTileTo(1)}/>
+        <Square value={tiles[2]} onSquareClick={() => setTileTo(2)}/>
+      </div>
+      <div className='tictactoe-row'>
+        <Square value={tiles[3]} onSquareClick={() => setTileTo(3)}/>
+        <Square value={tiles[4]} onSquareClick={() => setTileTo(4)}/>
+        <Square value={tiles[5]} onSquareClick={() => setTileTo(5)}/>
+      </div>
+      <div className='tictactoe-row'>
+        <Square value={tiles[6]} onSquareClick={() => setTileTo(6)}/>
+        <Square value={tiles[7]} onSquareClick={() => setTileTo(7)}/>
+        <Square value={tiles[8]} onSquareClick={() => setTileTo(8)}/>
+      </div>
     </div>
   );
 };
