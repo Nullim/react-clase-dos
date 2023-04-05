@@ -1,0 +1,22 @@
+.memotest-wrapper{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: relative;
+}
+
+.memotest-img-wrapper {
+    width: 360px;
+    height: 160px;
+    border: 1px solid;
+    margin: 10px;
+    padding: 10px;
+}
+
+.memotest-img{
+    height: 100%;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+}
